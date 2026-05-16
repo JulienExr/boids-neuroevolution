@@ -33,6 +33,11 @@ const fitnessStat = document.getElementById("fitnessStat");
 const captureStat = document.getElementById("captureStat");
 const fpsStat = document.getElementById("fpsStat");
 
+const sprites = {
+  bird: loadSprite("assets/bird.svg"),
+  falcon: loadSprite("assets/falcon.svg"),
+};
+
 const state = {
   mode: "classic",
   generation: 0,
@@ -47,6 +52,12 @@ const state = {
   speedAccumulator: 0,
   lastFpsTime: performance.now(),
 };
+
+function loadSprite(src) {
+  const image = new Image();
+  image.src = src;
+  return image;
+}
 
 function rand(min, max) {
   return min + Math.random() * (max - min);
@@ -335,6 +346,20 @@ class Bird {
     context.save();
     context.translate(this.position.x, this.position.y);
     context.rotate(angle);
+
+    if (sprites.bird.complete && sprites.bird.naturalWidth > 0) {
+      context.drawImage(sprites.bird, -18, -9, 36, 18);
+      if (this.brain && this.rank <= 3) {
+        context.strokeStyle = rankColor(this.rank);
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.arc(0, 0, 14, 0, Math.PI * 2);
+        context.stroke();
+      }
+      context.restore();
+      return;
+    }
+
     context.beginPath();
     context.moveTo(13, 0);
     context.lineTo(-10, -7);
@@ -421,6 +446,13 @@ class Predator {
     context.save();
     context.translate(this.position.x, this.position.y);
     context.rotate(angle);
+
+    if (sprites.falcon.complete && sprites.falcon.naturalWidth > 0) {
+      context.drawImage(sprites.falcon, -28, -17, 56, 34);
+      context.restore();
+      return;
+    }
+
     context.beginPath();
     context.moveTo(22, 0);
     context.lineTo(-16, -12);

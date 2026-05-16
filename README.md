@@ -27,7 +27,7 @@ During neuroevolution, the top 10 bird brains are saved as JSON for generations 
 
 
 ## Web Viewer
-A static Canvas viewer is available in `docs/`. It supports the classic Reynolds mode and a genetic replay mode that loads `top_gen_000`, `025`, `050`, `075`, and `100` checkpoints.
+A static Canvas viewer is available in `docs/`. It uses lightweight SVG bird and falcon sprites in `docs/assets/`. It supports the classic Reynolds mode and a genetic replay mode that loads `top_gen_000`, `025`, `050`, `075`, and `100` checkpoints.
 
 Run it locally with:
 

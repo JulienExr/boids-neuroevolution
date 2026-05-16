@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 72">
+  <defs>
+    <linearGradient id="falconBody" x1="12" x2="104" y1="9" y2="61" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff1d0"/>
+      <stop offset="0.38" stop-color="#c78245"/>
+      <stop offset="1" stop-color="#6e2e28"/>
+    </linearGradient>
+    <linearGradient id="falconWing" x1="16" x2="80" y1="4" y2="66" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8d08e"/>
+      <stop offset="1" stop-color="#7a3028"/>
+    </linearGradient>
+  </defs>
+  <path d="M112 35 77 20 49 3 58 29 8 14 40 36 8 58 58 43 49 69 77 51Z" fill="url(#falconBody)" stroke="#3b1515" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M49 5 64 31 15 17Z" fill="url(#falconWing)" opacity="0.95"/>
+  <path d="M49 67 64 41 15 55Z" fill="#8e3a30" opacity="0.95"/>
+  <path d="M69 25 91 34 69 44 59 36Z" fill="#fff2c2" opacity="0.85"/>
+  <circle cx="87" cy="31" r="3.2" fill="#0a0807"/>
+  <path d="M111 35 120 29 117 35 120 41Z" fill="#ffd35a" stroke="#5f3210" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M76 52 86 58 78 56 72 63" fill="none" stroke="#2b1010" stroke-width="2.3" stroke-linecap="round"/>
+</svg>
