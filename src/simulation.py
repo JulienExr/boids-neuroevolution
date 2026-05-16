@@ -172,7 +172,7 @@ class Simulation:
 
     def update(self) -> None:
         for predator in self.predators:
-            predator.update(self.birds)
+            predator.update(self.birds, self.predators)
 
         if self.mode == ControlMode.NEURAL:
             self.update_neural_mode()

@@ -5,7 +5,12 @@ from typing import TYPE_CHECKING, ClassVar
 
 import pygame
 
-from src.settings import HEIGHT, WIDTH
+from src.settings import (
+    HEIGHT,
+    PREDATOR_SEPARATION_RANGE,
+    PREDATOR_SEPARATION_WEIGHT,
+    WIDTH,
+)
 from src.vector_utils import limit_vector, toroidal_delta
 
 if TYPE_CHECKING:
@@ -31,7 +36,7 @@ class Predator:
         self.sprite = sprite
         self.mouse_controlled = mouse_controlled
 
-    def update(self, birds: list[Bird]) -> None:
+    def update(self, birds: list[Bird], predators: list[Predator]) -> None:
         if self.mouse_controlled:
             target = pygame.Vector2(pygame.mouse.get_pos())
             self.position.update(target)
@@ -46,6 +51,7 @@ class Predator:
                 steering = limit_vector(desired - self.velocity, self.max_force)
                 self.acceleration += steering
 
+        self.acceleration += self.separate_from_predators(predators)
         self.velocity += self.acceleration
         self.velocity = limit_vector(self.velocity, self.max_speed)
         if self.velocity.length_squared() > 0:
@@ -61,6 +67,35 @@ class Predator:
             birds,
             key=lambda bird: toroidal_delta(self.position, bird.position).length_squared(),
         )
+
+    def separate_from_predators(self, predators: list[Predator]) -> pygame.Vector2:
+        separation = pygame.Vector2()
+        close_predators = 0
+
+        for other in predators:
+            if other is self:
+                continue
+
+            delta = toroidal_delta(self.position, other.position)
+            distance_sq = delta.length_squared()
+            if distance_sq == 0:
+                angle = id(other) % 360
+                separation += pygame.Vector2(1, 0).rotate(angle)
+                close_predators += 1
+                continue
+
+            in_range = distance_sq < PREDATOR_SEPARATION_RANGE * PREDATOR_SEPARATION_RANGE
+            if in_range:
+                separation -= delta / max(distance_sq, 1.0)
+                close_predators += 1
+
+        if close_predators == 0 or separation.length_squared() == 0:
+            return pygame.Vector2()
+
+        separation /= close_predators
+        separation = separation.normalize() * self.max_speed
+        steering = limit_vector(separation - self.velocity, self.max_force)
+        return steering * PREDATOR_SEPARATION_WEIGHT
 
     def wrap_edges(self) -> None:
         self.position.x %= WIDTH
