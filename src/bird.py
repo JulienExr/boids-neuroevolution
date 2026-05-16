@@ -44,7 +44,7 @@ class Bird:
     def apply_force(self, force: pygame.Vector2) -> None:
         self.acceleration += force
 
-    def flock(self, birds: list[Bird], predator: Predator, settings: BoidSettings) -> None:
+    def flock(self, birds: list[Bird], predators: list[Predator], settings: BoidSettings) -> None:
         separation = pygame.Vector2()
         alignment = pygame.Vector2()
         cohesion = pygame.Vector2()
@@ -89,7 +89,7 @@ class Bird:
             separation = separation.normalize() * settings.max_speed
             separation = limit_vector(separation - self.velocity, settings.max_force)
 
-        flee = self.flee_from_predator(predator, settings)
+        flee = self.flee_from_predators(predators, settings)
 
         self.apply_force(separation * settings.separation_weight)
         self.apply_force(alignment * settings.alignment_weight)
@@ -99,31 +99,61 @@ class Bird:
     def steer_with_brain(
         self,
         birds: list[Bird],
-        predator: Predator,
+        predators: list[Predator],
         settings: BoidSettings,
         neural_settings: NeuralSettings,
     ) -> None:
         if self.brain is None:
             return
 
-        inputs = self.neural_inputs(birds, predator, settings)
-        turn_signal = self.brain.forward(inputs)[0]
-        self.velocity.rotate_ip(turn_signal * neural_settings.max_turn_degrees)
+        inputs = self.neural_inputs(birds, predators, settings, neural_settings)
+        turn_signal, speed_signal = self.brain.forward(inputs)
 
-        if self.velocity.length_squared() > 0:
-            self.velocity.scale_to_length(settings.max_speed)
+        if self.velocity.length_squared() == 0:
+            self.velocity = self.random_velocity()
+
+        self.velocity.rotate_ip(turn_signal * neural_settings.max_turn_degrees)
+        speed = self.velocity.length() + speed_signal * neural_settings.max_speed_change
+        speed = max(neural_settings.min_speed, min(settings.max_speed, speed))
+        self.velocity.scale_to_length(speed)
 
     def neural_inputs(
-        self, birds: list[Bird], predator: Predator, settings: BoidSettings
+        self,
+        birds: list[Bird],
+        predators: list[Predator],
+        settings: BoidSettings,
+        neural_settings: NeuralSettings,
     ) -> list[float]:
-        predator_vector = toroidal_delta(self.position, predator.position)
+        predator_vector = pygame.Vector2()
+        predator_distance = settings.predator_range
+        if predators:
+            closest_predator = min(
+                predators,
+                key=lambda p: toroidal_delta(
+                    self.position, p.position
+                ).length_squared(),
+            )
+            predator_vector = toroidal_delta(self.position, closest_predator.position)
+            predator_distance = predator_vector.length()
+
         group_vector = self.vector_to_group(birds, settings.visual_range)
+        neighbor_count = self.count_neighbors(birds, settings.visual_range)
 
         predator_input = self.normalized_components(
             predator_vector, settings.predator_range
         )
         group_input = self.normalized_components(group_vector, settings.visual_range)
-        return [*predator_input, *group_input]
+        velocity_input = self.normalized_components(self.velocity, settings.max_speed)
+        neighbor_input = min(neighbor_count / neural_settings.neighbor_count_scale, 1.0)
+        predator_distance_input = min(predator_distance / settings.predator_range, 1.0)
+
+        return [
+            *predator_input,
+            *group_input,
+            *velocity_input,
+            neighbor_input,
+            predator_distance_input,
+        ]
 
     def vector_to_group(self, birds: list[Bird], visual_range: float) -> pygame.Vector2:
         center = pygame.Vector2()
@@ -165,16 +195,25 @@ class Bird:
         scaled = vector / max_length
         return max(-1.0, min(1.0, scaled.x)), max(-1.0, min(1.0, scaled.y))
 
-    def flee_from_predator(
-        self, predator: Predator, settings: BoidSettings
+    def flee_from_predators(
+        self, predators: list[Predator], settings: BoidSettings
     ) -> pygame.Vector2:
-        delta_to_predator = toroidal_delta(self.position, predator.position)
-        distance_sq = delta_to_predator.length_squared()
-        if distance_sq == 0 or distance_sq > settings.predator_range * settings.predator_range:
+        flee_direction = pygame.Vector2()
+        predators_in_range = 0
+
+        for predator in predators:
+            delta_to_predator = toroidal_delta(self.position, predator.position)
+            distance_sq = delta_to_predator.length_squared()
+            in_range = distance_sq <= settings.predator_range * settings.predator_range
+            if distance_sq > 0 and in_range:
+                flee_direction -= delta_to_predator.normalize()
+                predators_in_range += 1
+
+        if predators_in_range == 0:
             return pygame.Vector2()
 
-        desired = -delta_to_predator.normalize() * settings.max_speed
-        steering = desired - self.velocity
+        flee_direction = flee_direction.normalize() * settings.max_speed
+        steering = flee_direction - self.velocity
         return limit_vector(steering, settings.max_force * 1.8)
 
     def update(self, settings: BoidSettings) -> None:
@@ -191,11 +230,22 @@ class Bird:
     def update_neural_fitness(
         self,
         birds: list[Bird],
-        predator: Predator,
+        predators: list[Predator],
         settings: BoidSettings,
         neural_settings: NeuralSettings,
     ) -> bool:
-        predator_distance = toroidal_delta(self.position, predator.position).length()
+        closest_predator = min(
+            predators,
+            key=lambda p: toroidal_delta(self.position, p.position).length_squared(),
+        )
+        predator_distance = toroidal_delta(self.position, closest_predator.position).length()
+
+        caught = any(
+            toroidal_delta(self.position, p.position).length()
+            < neural_settings.predator_catch_radius
+            for p in predators
+        )
+
         group_distance = self.vector_to_group(birds, settings.visual_range).length()
         neighbor_count = self.count_neighbors(birds, settings.visual_range)
 
@@ -209,7 +259,7 @@ class Bird:
         self.fitness += 0.006 * group_score
         self.fitness += 0.002 * speed_score
 
-        if predator_distance < neural_settings.predator_catch_radius:
+        if caught:
             self.fitness -= 1.0
             self.captures += 1
             self.respawn()
@@ -231,7 +281,6 @@ class Bird:
         self.position.y %= HEIGHT
 
     def draw(self, screen: pygame.Surface) -> None:
-        # Base sprite points right; quantized rotation keeps transform cost low.
         angle_key = round(self.angle) % 360
         rotated = self.rotation_cache.get(angle_key)
         if rotated is None:
