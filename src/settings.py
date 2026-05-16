@@ -5,7 +5,11 @@ from enum import Enum
 WIDTH = 1200
 HEIGHT = 800
 FPS = 60
-NUM_BIRDS = 120
+NUM_BIRDS = 60
+NUM_PREDATORS = 3
+FAST_MODE_STEPS = 100
+FAST_EVENT_POLL_INTERVAL = 5
+FAST_STATUS_INTERVAL_MS = 250
 
 
 class ControlMode(Enum):
@@ -28,10 +32,13 @@ class BoidSettings:
 
 @dataclass
 class NeuralSettings:
-    input_size: int = 4
-    hidden_size: int = 6
-    output_size: int = 1
+    input_size: int = 8
+    hidden_size: int = 10
+    output_size: int = 2
     max_turn_degrees: float = 7.0
+    max_speed_change: float = 0.18
+    min_speed: float = 1.2
+    neighbor_count_scale: float = 8.0
     generation_frames: int = 900
     mutation_rate: float = 0.12
     mutation_strength: float = 0.35
