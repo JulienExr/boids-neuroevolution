@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boids Neuroevolution Viewer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="toolbar" aria-label="Contrôles de simulation">
+      <div class="control-group mode-group">
+        <button id="classicMode" class="segmented active" type="button">Classique</button>
+        <button id="geneticMode" class="segmented" type="button">Génétique</button>
+      </div>
+
+      <label class="field">
+        <span>Génération</span>
+        <select id="generationSelect">
+          <option value="0">0</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="75">75</option>
+          <option value="100">100</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Vitesse</span>
+        <input id="speedSlider" type="range" min="0.25" max="8" step="0.25" value="0.5">
+        <strong id="speedValue" class="speed-value">0.5x</strong>
+      </label>
+
+      <button id="resetButton" class="icon-button" type="button" title="Réinitialiser">↻</button>
+      <button id="pauseButton" class="icon-button" type="button" title="Pause / lecture">Ⅱ</button>
+    </section>
+
+    <section class="stage">
+      <canvas id="simulationCanvas" width="1200" height="800"></canvas>
+      <aside class="stats" aria-label="Statistiques">
+        <div><span>Mode</span><strong id="modeStat">Classique</strong></div>
+        <div><span>Checkpoint</span><strong id="checkpointStat">-</strong></div>
+        <div><span>Top cerveaux</span><strong id="brainStat">-</strong></div>
+        <div><span>Best fitness</span><strong id="fitnessStat">-</strong></div>
+        <div><span>Captures</span><strong id="captureStat">0</strong></div>
+        <div><span>FPS</span><strong id="fpsStat">0</strong></div>
+      </aside>
+    </section>
+
+    <p id="statusLine" class="status-line">Chargement du viewer…</p>
+  </main>
+
+  <script src="checkpoint_data.js"></script>
+  <script src="simulation.js"></script>
+</body>
+</html>
