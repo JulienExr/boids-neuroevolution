@@ -15,6 +15,7 @@ from src.settings import (
     CHECKPOINT_DIR,
     CHECKPOINT_GENERATIONS,
     CHECKPOINT_TOP_BRAINS,
+    CHECKPOINT_WEB_DIR,
     FPS,
     HEIGHT,
     NUM_BIRDS,
@@ -55,6 +56,7 @@ class Simulation:
             CHECKPOINT_TOP_BRAINS,
             self.neural_settings,
             self.settings,
+            CHECKPOINT_WEB_DIR,
         )
         self.genetic_algorithm = GeneticAlgorithm(
             self.neural_settings,
@@ -84,7 +86,7 @@ class Simulation:
                 random.uniform(0, WIDTH),
                 random.uniform(0, HEIGHT),
                 self.predator_sprite,
-                mouse_controlled=index == 0,
+                mouse_controlled=False,
             )
             for index in range(NUM_PREDATORS)
         ]

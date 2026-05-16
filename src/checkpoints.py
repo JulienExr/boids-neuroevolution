@@ -20,14 +20,18 @@ class CheckpointManager:
         top_brains: int,
         neural_settings: NeuralSettings,
         boid_settings: BoidSettings,
+        mirror_directory: str | None = None,
     ):
         self.directory = Path(directory)
+        self.mirror_directory = Path(mirror_directory) if mirror_directory else None
         self.target_generations = set(target_generations)
         self.top_brains = top_brains
         self.neural_settings = neural_settings
         self.boid_settings = boid_settings
         self.saved_generations: set[int] = set()
         self.directory.mkdir(parents=True, exist_ok=True)
+        if self.mirror_directory is not None:
+            self.mirror_directory.mkdir(parents=True, exist_ok=True)
 
     def maybe_save_top(self, generation: int, birds: list[Bird]) -> bool:
         if generation not in self.target_generations:
@@ -77,8 +81,33 @@ class CheckpointManager:
             "boid_settings": asdict(self.boid_settings),
         }
 
-        path = self.directory / f"top_gen_{generation:03d}.json"
-        path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        content = json.dumps(payload, indent=2)
+        file_name = f"top_gen_{generation:03d}.json"
+        path = self.directory / file_name
+        path.write_text(content, encoding="utf-8")
+
+        if self.mirror_directory is not None:
+            mirror_path = self.mirror_directory / file_name
+            mirror_path.write_text(content, encoding="utf-8")
+            self.write_embedded_web_checkpoints()
+
+    def write_embedded_web_checkpoints(self) -> None:
+        if self.mirror_directory is None:
+            return
+
+        payloads = {}
+        for path in sorted(self.mirror_directory.glob("top_gen_*.json")):
+            generation = str(int(path.stem.split("_")[-1]))
+            payloads[generation] = json.loads(path.read_text(encoding="utf-8"))
+
+        if not payloads:
+            return
+
+        content = "window.CHECKPOINT_DATA = "
+        content += json.dumps(payloads, separators=(",", ":"))
+        content += ";\n"
+        embedded_path = self.mirror_directory.parent / "checkpoint_data.js"
+        embedded_path.write_text(content, encoding="utf-8")
 
     def load_brains(self, generation: int) -> list[NeuralNetwork]:
         path = self.directory / f"top_gen_{generation:03d}.json"
