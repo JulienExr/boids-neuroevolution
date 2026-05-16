@@ -1,5 +1,7 @@
 # Boids-neuroevolution
 
+Live simulation: https://julienexr.github.io/boids-neuroevolution/
+
 An interactive 2D flocking simulation built in Python using Pygame. This project combines emergent behavior with artificial intelligence to simulate complex evolutionary dynamics.
 
 ## Key Features
