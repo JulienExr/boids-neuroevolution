@@ -15,7 +15,13 @@ if TYPE_CHECKING:
 class Predator:
     rotation_cache: ClassVar[dict[int, pygame.Surface]] = {}
 
-    def __init__(self, x: float, y: float, sprite: pygame.Surface):
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        sprite: pygame.Surface,
+        mouse_controlled: bool = True,
+    ):
         self.position = pygame.Vector2(x, y)
         self.velocity = pygame.Vector2()
         self.acceleration = pygame.Vector2()
@@ -23,7 +29,7 @@ class Predator:
         self.max_speed = 5.2
         self.max_force = 0.14
         self.sprite = sprite
-        self.mouse_controlled = True
+        self.mouse_controlled = mouse_controlled
 
     def update(self, birds: list[Bird]) -> None:
         if self.mouse_controlled:
