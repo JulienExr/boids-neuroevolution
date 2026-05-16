@@ -27,7 +27,7 @@ During neuroevolution, the top 10 bird brains are saved as JSON for generations 
 
 
 ## Web Viewer
-A static Canvas viewer is available in `web/`. It supports the classic Reynolds mode and a genetic replay mode that loads `top_gen_000`, `025`, `050`, `075`, and `100` checkpoints.
+A static Canvas viewer is available in `docs/`. It supports the classic Reynolds mode and a genetic replay mode that loads `top_gen_000`, `025`, `050`, `075`, and `100` checkpoints.
 
 Run it locally with:
 
@@ -36,4 +36,4 @@ cd web
 python3 -m http.server 8765
 ```
 
-Then open `http://127.0.0.1:8765/`. The `web/checkpoints/` folder is mirrored when new checkpoints are saved so it can be published directly with GitHub Pages. `web/checkpoint_data.js` embeds the same checkpoints so the viewer also works when opened directly from disk. The speed slider starts slower by default (`0.5x`) but still goes up to `8x`.
+Then open `http://127.0.0.1:8765/`. The `docs/checkpoints/` folder is mirrored when new checkpoints are saved so it can be published directly with GitHub Pages. `docs/checkpoint_data.js` embeds the same checkpoints so the viewer also works when opened directly from disk. The speed slider starts slower by default (`0.5x`) but still goes up to `8x`.
