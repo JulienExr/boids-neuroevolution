@@ -5,12 +5,16 @@ import sys
 import pygame
 
 from src.bird import Bird
+from src.checkpoints import CheckpointManager
 from src.genetic import GeneticAlgorithm
 from src.predator import Predator
 from src.settings import (
     FAST_EVENT_POLL_INTERVAL,
     FAST_MODE_STEPS,
     FAST_STATUS_INTERVAL_MS,
+    CHECKPOINT_DIR,
+    CHECKPOINT_GENERATIONS,
+    CHECKPOINT_TOP_BRAINS,
     FPS,
     HEIGHT,
     NUM_BIRDS,
@@ -45,7 +49,17 @@ class Simulation:
         self.font = pygame.font.SysFont("arial", 18)
         self.settings = BoidSettings()
         self.neural_settings = NeuralSettings()
-        self.genetic_algorithm = GeneticAlgorithm(self.neural_settings)
+        self.checkpoint_manager = CheckpointManager(
+            CHECKPOINT_DIR,
+            CHECKPOINT_GENERATIONS,
+            CHECKPOINT_TOP_BRAINS,
+            self.neural_settings,
+            self.settings,
+        )
+        self.genetic_algorithm = GeneticAlgorithm(
+            self.neural_settings,
+            self.checkpoint_manager,
+        )
         self.mode = ControlMode.BOIDS
         self.generation_frame = 0
         self.captures_this_generation = 0
@@ -229,6 +243,7 @@ class Simulation:
             f"Progression: {self.generation_frame}/{self.neural_settings.generation_frames}",
             f"Best courant: {current_best:.2f}",
             f"Best precedent: {self.genetic_algorithm.best_fitness:.2f}",
+            f"Checkpoints: top {CHECKPOINT_TOP_BRAINS} @ {CHECKPOINT_GENERATIONS}",
             f"Captures: {self.captures_this_generation}",
             f"Simulation: {self.fast_steps_per_second:.0f} updates/s",
             "F: retour au rendu normal | Espace: pause | Esc: quitter",

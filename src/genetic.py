@@ -2,15 +2,21 @@ from __future__ import annotations
 
 import random
 
+from src.checkpoints import CheckpointManager
 from src.bird import Bird
 from src.neural import NeuralNetwork
 from src.settings import HEIGHT, WIDTH, NeuralSettings
 
 
 class GeneticAlgorithm:
-    def __init__(self, settings: NeuralSettings):
+    def __init__(
+        self,
+        settings: NeuralSettings,
+        checkpoint_manager: CheckpointManager | None = None,
+    ):
         self.settings = settings
-        self.generation = 1
+        self.checkpoint_manager = checkpoint_manager
+        self.generation = 0
         self.best_fitness = 0.0
 
     def create_brain(self) -> NeuralNetwork:
@@ -32,6 +38,8 @@ class GeneticAlgorithm:
 
         ranked = sorted(birds, key=lambda bird: bird.fitness, reverse=True)
         self.best_fitness = ranked[0].fitness
+        if self.checkpoint_manager is not None:
+            self.checkpoint_manager.maybe_save_top(self.generation, ranked)
 
         elite_count = max(2, int(len(ranked) * self.settings.elite_fraction))
         next_generation = [

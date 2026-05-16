@@ -20,3 +20,7 @@ An interactive 2D flocking simulation built in Python using Pygame. This project
 * `H`: show or hide the HUD.
 * `R`: reset the simulation.
 * `Esc`: quit.
+
+
+## Checkpoints
+During neuroevolution, the top 10 bird brains are saved as JSON for generations `0`, `25`, `50`, `75`, and `100`. Files are written to `checkpoints/top_gen_XXX.json` and include the neural architecture, genomes, fitness values, captures, and settings used for the run.
