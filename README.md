@@ -34,7 +34,7 @@ A static Canvas viewer is available in `docs/`. It uses lightweight SVG bird and
 Run it locally with:
 
 ```bash
-cd web
+cd docs
 python3 -m http.server 8765
 ```
 
